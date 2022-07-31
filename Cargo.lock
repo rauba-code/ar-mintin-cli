@@ -5,6 +5,7 @@ version = 3
 [[package]]
 name = "ar-mintin"
 version = "1.0.0"
+source = "git+https://github.com/rauba-code/ar-mintin#5a239dae65c2540a23b5cfd83799f5a1ff00fb11"
 dependencies = [
  "json",
  "rand",

@@ -29,6 +29,7 @@ use clap::Parser;
 use std::io::prelude::*;
 
 use ar_mintin::ent::{ProgressTable, TableEntry};
+use ar_mintin::file;
 use ar_mintin::sim;
 
 fn init() {
@@ -68,9 +69,9 @@ fn main() {
     init();
     let args = args::Args::parse();
     cli::cls();
-    let table: Vec<TableEntry> = ar_mintin::load_table(&args.inpath);
+    let table: Vec<TableEntry> = file::load_table(&args.inpath);
     let ptable = if let Some(ppath) = args.progress.clone() {
-        if match ar_mintin::get_file_type(&ppath) {
+        if match file::get_file_type(&ppath) {
             Some(pftype) => pftype.is_file(),
             None => false,
         } {
