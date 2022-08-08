@@ -32,18 +32,9 @@ use ar_mintin::ent::{ProgressTable, TableEntry};
 use ar_mintin::file;
 use ar_mintin::sim;
 
-fn init() {
-    use crossterm::{cursor, ExecutableCommand};
-    ctrlc::set_handler(|| {
-        std::io::stdout().lock().execute(cursor::Show).unwrap();
-        println!();
-        println!("Viso gero!");
-        std::process::exit(0);
-    })
-    .unwrap();
-
+fn warranty() {
     print!(
-        "    AR-MINTIN -- Įsiminimo programa / Memorising application
+        "    AR-MINTIN v{} -- Įsiminimo programa / Memorising application
     Copyright (C) 2022 Arnoldas Rauba
 
     This program is free software: you can redistribute it and/or modify
@@ -60,9 +51,30 @@ fn init() {
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     Press ENTER to begin
-"
+",
+        env!("CARGO_PKG_VERSION")
     );
-    cli::standby(&mut std::io::stdin().lock().lines());
+}
+
+fn init() {
+    ctrlc::set_handler(cli::interrupt).unwrap();
+
+    print!(
+        "    AR-MINTIN v{} -- Įsiminimo programa / Memorising application
+    Copyright (C) 2022 Arnoldas Rauba
+
+    This program is FREE SOFTWARE with ABSOLUTELY NO WARRANTY.
+    Press 'L' for more information
+
+    Press 'ENTER' to begin
+",
+        env!("CARGO_PKG_VERSION")
+    );
+
+    if cli::standby_ex() {
+        warranty();
+        cli::standby();
+    }
 }
 
 fn main() {
@@ -92,11 +104,11 @@ fn main() {
             sim::UiMessage::Display(ent) => {
                 println!("    {}", ent.lhs);
                 println!("    {}", ent.rhs);
-                cli::standby(lines);
+                cli::standby();
             }
             sim::UiMessage::NotifyAssessment => {
                 println!("=== SAVIKONTROLĖ ===");
-                cli::standby(lines);
+                cli::standby();
             }
         }
     };
