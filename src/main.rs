@@ -1,5 +1,5 @@
 /*
- * main.rs -- Core application
+ * main.rs -- Command-line interface for AR-MINTIN library
  * Copyright (C) 2022 Arnoldas Rauba
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ extern crate ctrlc;
 
 mod args;
 mod cli;
+mod dest;
 
 use clap::Parser;
 use std::io::prelude::*;
@@ -83,7 +84,7 @@ fn main() {
     cli::cls();
     let table: Vec<TableEntry> = file::load_table(&args.inpath);
     let ptable = if let Some(ppath) = args.progress.clone() {
-        if match file::get_file_type(&ppath) {
+        if match dest::get_file_type(&ppath) {
             Some(pftype) => pftype.is_file(),
             None => false,
         } {
@@ -97,24 +98,26 @@ fn main() {
     let interact = |msg: sim::UiMessage| {
         let lines = &mut std::io::stdin().lock().lines();
         match msg {
-            sim::UiMessage::Assess(ent, ans) => {
+            sim::UiMessage::Assess(ent) => {
                 println!("    {}", ent.lhs);
-                *ans = cli::readin(lines).unwrap();
+                Some(cli::readin(lines).unwrap())
             }
             sim::UiMessage::Display(ent) => {
                 println!("    {}", ent.lhs);
                 println!("    {}", ent.rhs);
                 cli::standby();
+                None
             }
             sim::UiMessage::NotifyAssessment => {
                 println!("=== SAVIKONTROLĖ ===");
                 cli::standby();
+                None
             }
         }
     };
-    sim::Simulation {
-        pt: ptable,
-        args: args.into(),
+    let mut s = sim::Simulation::new(ptable, args.into());
+    let mut post: Option<String> = None;
+    loop {
+        post = interact(s.next(post));
     }
-    .simulate(&interact);
 }
