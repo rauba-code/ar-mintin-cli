@@ -53,7 +53,7 @@ fn warranty() {
 
     Press ENTER to begin
 ",
-        env!("CARGO_PKG_VERSION")
+        ar_mintin::version()
     );
 }
 
@@ -62,6 +62,7 @@ fn init() {
 
     print!(
         "    AR-MINTIN v{} -- Įsiminimo programa / Memorising application
+          CLI v{}
     Copyright (C) 2022 Arnoldas Rauba
 
     This program is FREE SOFTWARE with ABSOLUTELY NO WARRANTY.
@@ -69,6 +70,7 @@ fn init() {
 
     Press 'ENTER' to begin
 ",
+        ar_mintin::version(),
         env!("CARGO_PKG_VERSION")
     );
 
