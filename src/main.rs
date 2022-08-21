@@ -33,6 +33,8 @@ use reqwest::blocking as req;
 use reqwest::Url;
 use std::io::prelude::*;
 
+use api::request::*;
+use api::response::*;
 use ar_mintin::ent::{ProgressTable, TableEntry};
 use ar_mintin::file;
 use ar_mintin::sim;
@@ -85,16 +87,8 @@ fn init() {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn local_main(args: args::Args) {
     init();
-    let args = args::Args::parse();
-    cli::cls();
-    if let Ok(ur) = Url::parse(args.inpath.to_str().unwrap_or("")) {
-        let resp: api::response::NormalResponse =
-            req::get(ur)?.json::<api::response::NormalResponse>()?;
-        println!("{:?}", resp);
-        return Ok(());
-    }
     let table: Vec<TableEntry> = file::load_table(&args.inpath);
     let ptable = if let Some(ppath) = args.progress.clone() {
         if match dest::get_file_type(&ppath) {
@@ -133,4 +127,55 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         post = interact(s.next(post));
     }
+}
+
+fn http_main(ur: &Url) -> Result<(), Box<dyn std::error::Error>> {
+    let resp: NormalResponse = req::get(ur.clone())?
+        .json::<NormalResponse>()
+        .expect("The URL is not a valid AR-MINTIN instance");
+    assert!(matches!(resp.msg, DisplayMessage::New));
+    let mut token = resp.token;
+    let mut post: Option<String> = None;
+    let lines = &mut std::io::stdin().lock().lines();
+    let client = req::Client::new();
+    init();
+    loop {
+        let pstr = serde_json::to_string(&Request { token, msg: post })?;
+        println!("POST\nBody: {}\n", pstr);
+        let resp: NormalResponse = client
+            .post(ur.clone())
+            .body(pstr)
+            .send()?
+            .json::<NormalResponse>()?;
+        token = resp.token;
+        post = match resp.msg {
+            DisplayMessage::New => panic!("DisplayMessage::New must not appear more than once"),
+            DisplayMessage::NotifyAssessment => {
+                println!("=== SAVIKONTROLĖ ===");
+                cli::standby();
+                None
+            }
+            DisplayMessage::Display(lhs, rhs) => {
+                println!("    {}", lhs);
+                println!("    {}", rhs);
+                cli::standby();
+                None
+            }
+            DisplayMessage::Assess(lhs) => {
+                println!("    {}", lhs);
+                Some(cli::readin(lines).unwrap())
+            }
+        }
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = args::Args::parse();
+    if (&args.inpath).exists() {
+        local_main(args);
+        return Ok(());
+    } else if let Ok(ur) = Url::parse(args.inpath.to_str().unwrap_or("")) {
+        return http_main(&ur);
+    }
+    panic!("Unresolved path")
 }

@@ -12,6 +12,8 @@ The input data (a topic consisting of facts) is a list of key-value pairs.
 
 The application allows to save the progress into the file to resume later. Edits made to the list file.
 
+The application could also be used as a web client to a remote AR-MINTIN web server, which contains the progress data. 
+
 ## LIMITATIONS
 
 At the time of writing, there is no in-built interface to edit the JSON-formatted input file. The syntax can be seen in `demo.json` (see: EXAMPLES).
@@ -45,6 +47,11 @@ ar-mintin demo.json -p progress.p
 ### Running the application, reading the progress and saving elsewhere
 ```bash
 ar-mintin demo.json -p progress.p -o out_progress.p
+```
+
+### Running the application as a web client to the remote server
+```bash
+ar-mintin https://www.example.com:8083
 ```
 
 ## NOTES
