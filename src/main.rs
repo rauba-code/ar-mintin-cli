@@ -18,20 +18,25 @@
  */
 
 extern crate ar_mintin;
+extern crate ar_mintin_webapi;
 extern crate clap;
 extern crate crossterm;
 extern crate ctrlc;
+extern crate reqwest;
 
 mod args;
 mod cli;
 mod dest;
 
 use clap::Parser;
+use reqwest::blocking as req;
+use reqwest::Url;
 use std::io::prelude::*;
 
 use ar_mintin::ent::{ProgressTable, TableEntry};
 use ar_mintin::file;
 use ar_mintin::sim;
+use ar_mintin_webapi as api;
 
 fn warranty() {
     print!(
@@ -80,10 +85,16 @@ fn init() {
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     init();
     let args = args::Args::parse();
     cli::cls();
+    if let Ok(ur) = Url::parse(args.inpath.to_str().unwrap_or("")) {
+        let resp: api::response::NormalResponse =
+            req::get(ur)?.json::<api::response::NormalResponse>()?;
+        println!("{:?}", resp);
+        return Ok(());
+    }
     let table: Vec<TableEntry> = file::load_table(&args.inpath);
     let ptable = if let Some(ppath) = args.progress.clone() {
         if match dest::get_file_type(&ppath) {
