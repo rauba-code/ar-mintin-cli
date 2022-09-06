@@ -141,7 +141,6 @@ fn http_main(ur: &Url) -> Result<(), Box<dyn std::error::Error>> {
     init();
     loop {
         let pstr = serde_json::to_string(&Request { token, msg: post })?;
-        println!("POST\nBody: {}\n", pstr);
         let resp: NormalResponse = client
             .post(ur.clone())
             .body(pstr)
