@@ -133,7 +133,7 @@ fn http_main(ur: &Url) -> Result<(), Box<dyn std::error::Error>> {
     let resp: NormalResponse = req::get(ur.clone())?
         .json::<NormalResponse>()
         .expect("The URL is not a valid AR-MINTIN instance");
-    assert!(matches!(resp.msg, DisplayMessage::New));
+    assert!(matches!(resp.msg, DisplayMessage::New { .. }));
     let mut token = resp.token;
     let mut post: Option<String> = None;
     let lines = &mut std::io::stdin().lock().lines();
@@ -148,7 +148,9 @@ fn http_main(ur: &Url) -> Result<(), Box<dyn std::error::Error>> {
             .json::<NormalResponse>()?;
         token = resp.token;
         post = match resp.msg {
-            DisplayMessage::New => panic!("DisplayMessage::New must not appear more than once"),
+            DisplayMessage::New { .. } => {
+                panic!("DisplayMessage::New must not appear more than once")
+            }
             DisplayMessage::NotifyAssessment => {
                 println!("=== SAVIKONTROLĖ ===");
                 cli::standby();
