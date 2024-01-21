@@ -2,6 +2,8 @@
 
 An interactive command-line application designed for fast long-term memorisation of concepts.
 
+**ARCHIVAL NOTE:** The development is transferred to https://codeberg.org/raubarno/mintin.
+
 ## DESCRIPTION
 
 The application aims to help memorising. Its primary purpose is to reduce the probability of *forgetting* any fact from the given topic. Other important factors are to a maintain a smooth learning curve, maximise the number of ways representing the given fact and do not drop the already learnt facts.
